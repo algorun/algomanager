@@ -27,7 +27,7 @@ If the docker run is unsuccessfull, it returns JSON object in the following form
 
 ## HTTP POST /stop
 ### Parameters
-- container_id: the id of the container *that you previously received from the run endpoint*
+- **container_id**: the id of the container *that you previously received from the run endpoint*
 
 ### Results
 If docker stop is successfull, it returns JSON object in the following format:

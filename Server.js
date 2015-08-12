@@ -5,6 +5,9 @@ var fs = require('fs');
 var path = require('path');
 var exec = require("child_process").exec;
 
+var host = '';
+var port = '';
+
 var app = express();
 app.use(bodyParser.json()); // for parsing application/json
 app.use(bodyParser.urlencoded({ extended: true })); // for parsing application/x-www-form-urlencoded
@@ -28,7 +31,7 @@ app.post('/run', function (req, res) {
         if (!err){
             run_result['status'] = 'success';
             run_result['container_id'] = stdout.trim();
-            run_result['endpoint'] = 'http://' + server.address().address + ':' + container_port;
+            run_result['endpoint'] = 'http://localhost:' + container_port;
             
             // save the container port number for future remove
             running_containers[stdout.trim()] = container_port;
@@ -77,8 +80,8 @@ app.use(express.static(__dirname));
 
 var server = app.listen(8764, function () {
 
-  var host = server.address().address;
-  var port = server.address().port;
+  host = server.address().address;
+  port = server.address().port;
 
   console.log('API server listening at http://%s:%s ..', host, port);
 

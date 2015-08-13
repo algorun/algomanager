@@ -26,6 +26,8 @@ var running_containers = {};
 var last_used = 'never';
 
 app.get('/api/v1/status', function (req, res) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
     res.status = 200;
     res.send({"last_used": last_used});
 });
@@ -43,7 +45,9 @@ app.post('/api/v1/deploy', function (req, res) {
             
                 // save the container port number for future remove
                 running_containers[container.id] = container_port;
-                
+
+                res.header("Access-Control-Allow-Origin", "*");
+		res.header("Access-Control-Allow-Headers", "X-Requested-With");
                 res.status = 200;
                 res.send(run_result);
             } else {
@@ -52,7 +56,9 @@ app.post('/api/v1/deploy', function (req, res) {
             
                 // return the port back to the pool
                 available_ports.push(container_port);
-                
+
+                res.header("Access-Control-Allow-Origin", "*");
+		res.header("Access-Control-Allow-Headers", "X-Requested-With");                
                 res.status = 200;
                 res.send(run_result);
             }

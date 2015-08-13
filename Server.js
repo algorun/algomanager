@@ -1,9 +1,12 @@
+/* Need to install Express npm install express */
+/* Need to install body-parser npm install body-parser */
+/* Need to install multer npm install multer */
+/* Need to install Dockerode npm install dockerode */
 var express = require('express');
 var bodyParser = require('body-parser');
 var multer = require('multer');
-var fs = require('fs');
-var path = require('path');
-var exec = require("child_process").exec;
+var Docker = require('dockerode');
+var docker = new Docker({socketPath: '/var/run/docker.sock'});
 
 var host = '';
 var port = '';
@@ -19,61 +22,55 @@ var end_port = 65535;
 for(var i = start_port; i<= end_port; i++) {
     available_ports.push(i);
 }
-
 var running_containers = {};
+var last_used = 'never';
 
-app.post('/run', function (req, res) {
+app.get('/api/v1/status', function (req, res) {
+    res.status = 200;
+    res.send({"last_used": last_used});
+});
+
+app.post('/api/v1/deploy', function (req, res) {
+    last_used = new Date();
     var docker_image = req.body.image;
     var container_port = available_ports.shift();
-    var run_command = 'docker run -d -p ' + container_port + ':8765 ' + docker_image;
-    exec(run_command, function (err, stdout, stderr) {
-        var run_result = {};
-        if (!err){
-            run_result['status'] = 'success';
-            run_result['container_id'] = stdout.trim();
-            run_result['endpoint'] = 'http://localhost:' + container_port;
+    docker.createContainer({Image: docker_image, Cmd: ['/bin/bash']}, function (err, container) {
+        container.start(  {"PortBindings": {"8765/tcp": [{"HostPort": container_port.toString()}]}}, function (err, data) {
+            var run_result = {};
+            if(!err){
+                run_result['status'] = 'success';
+                run_result['endpoint'] = 'http://localhost:' + container_port;
             
-            // save the container port number for future remove
-            running_containers[stdout.trim()] = container_port;
+                // save the container port number for future remove
+                running_containers[container.id] = container_port;
+                
+                res.status = 200;
+                res.send(run_result);
+            } else {
+                run_result['status'] = 'fail';
+                run_result['error_message'] = err;
             
-            res.status = 200;
-            res.send(run_result);
-        } else {
-            run_result['status'] = 'fail';
-            run_result['error_message'] = stderr.trim();
-            
-            // return the port back to the pool
-            available_ports.push(container_port);
-            
-            res.status = 200;
-            res.send(run_result);
-        }
+                // return the port back to the pool
+                available_ports.push(container_port);
+                
+                res.status = 200;
+                res.send(run_result);
+            }
+        });
     });
 });
 
-app.post('/stop', function (req, res) {
-    var container_id = req.body.container_id;
-    var stop_command = 'docker stop ' + container_id;
-    exec(stop_command, function (err, stdout, stderr) {
-        var stop_result = {};
-        if (!err){
-            stop_result['status'] = 'success';
-            stop_result['container_id'] = stdout.trim();
-            
-            // return the port back to the pool
-            available_ports.push(running_containers[container_id]);
-            delete running_containers[container_id];
-            
-            res.status = 200;
-            res.send(stop_result);
-        } else {
-            stop_result['status'] = 'fail';
-            stop_result['error_message'] = stderr.trim();
-            
-            res.status = 200;
-            res.send(stop_result);
+process.on('SIGINT', function () {
+    // stop all running AlgoManager containers
+    if(running_containers){
+        for (var key in running_containers) {
+            if (running_containers.hasOwnProperty(key)) {
+                docker.getContainer(key).stop(function(){});
+                console.log("container " + key + " stopped .. ");
+            }
         }
-    });
+    }
+    server.close();
 });
 
 app.use(express.static(__dirname));
@@ -83,6 +80,6 @@ var server = app.listen(8764, function () {
   host = server.address().address;
   port = server.address().port;
 
-  console.log('API server listening at http://%s:%s ..', host, port);
+  console.log('AlgoManager server listening at http://%s:%s ..', host, port);
 
 });

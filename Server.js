@@ -22,19 +22,37 @@ var end_port = 65535;
 for(var i = start_port; i<= end_port; i++) {
     available_ports.push(i);
 }
-var running_containers = {};
+var running_containers = [];
 var last_used = 'never';
 
 app.get('/api/v1/status', function (req, res) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
-    res.status = 200;
-    res.send({"last_used": last_used});
+    if(req.query.node_id){
+        for(var i = 0; i<running_containers.length; i++){
+            if(running_containers[i]['node_id'] === req.query.node_id){
+                res.status = 200;
+                res.send({"last_used": last_used, "endpoint": 'http://localhost:' + running_containers[i]['container_port']});
+                return;
+            }
+        }
+        if(i == running_containers.length){
+            res.status = 404;
+            res.send({"last_used": last_used, "endpoint": 'not found'});
+            return;
+        }
+        
+    } else {
+        res.status = 200;
+        res.send({"last_used": last_used});
+        return;
+    }
 });
 
 app.post('/api/v1/deploy', function (req, res) {
     last_used = new Date();
     var docker_image = req.body.image;
+    var node_id = req.body.node_id;
     var container_port = available_ports.shift();
     docker.createContainer({Image: docker_image, Cmd: ['/bin/bash']}, function (err, container) {
         container.start(  {"PortBindings": {"8765/tcp": [{"HostPort": container_port.toString()}]}}, function (err, data) {
@@ -43,11 +61,15 @@ app.post('/api/v1/deploy', function (req, res) {
                 run_result['status'] = 'success';
                 run_result['endpoint'] = 'http://localhost:' + container_port;
             
-                // save the container port number for future remove
-                running_containers[container.id] = container_port;
+                // save the container information number for future remove
+                var new_container = { 'container_id': container.id,
+                                     'container_port': container_port,
+                                     'node_id': node_id,
+                                     'time_created': new Date()};
+                running_containers.push(new_container);
 
                 res.header("Access-Control-Allow-Origin", "*");
-		res.header("Access-Control-Allow-Headers", "X-Requested-With");
+		        res.header("Access-Control-Allow-Headers", "X-Requested-With");
                 res.status = 200;
                 res.send(run_result);
             } else {
@@ -58,7 +80,7 @@ app.post('/api/v1/deploy', function (req, res) {
                 available_ports.push(container_port);
 
                 res.header("Access-Control-Allow-Origin", "*");
-		res.header("Access-Control-Allow-Headers", "X-Requested-With");                
+		        res.header("Access-Control-Allow-Headers", "X-Requested-With");                
                 res.status = 200;
                 res.send(run_result);
             }
@@ -69,11 +91,9 @@ app.post('/api/v1/deploy', function (req, res) {
 process.on('SIGINT', function () {
     // stop all running AlgoManager containers
     if(running_containers){
-        for (var key in running_containers) {
-            if (running_containers.hasOwnProperty(key)) {
-                docker.getContainer(key).stop(function(){});
-                console.log("container " + key + " stopped .. ");
-            }
+        for(var i = 0; i<running_containers.length; i++){
+            docker.getContainer(running_containers[i]["container_id"]).stop(function(){});
+            console.log("container " + running_containers[i]["container_id"] + " stopped .. ");
         }
     }
     server.close();

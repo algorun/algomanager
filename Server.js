@@ -53,6 +53,13 @@ app.post('/api/v1/deploy', function (req, res) {
     last_used = new Date();
     var docker_image = req.body.image;
     var node_id = req.body.node_id;
+    for(var i = 0; i<running_containers.length; i++){
+        if(running_containers[i]['node_id'] === node_id){
+            res.status = 200;
+            res.send({"status": 'success', "endpoint": 'http://localhost:' + running_containers[i]['container_port']});
+            return;
+        }
+    }
     var container_port = available_ports.shift();
     docker.createContainer({Image: docker_image, Cmd: ['/bin/bash']}, function (err, container) {
         container.start(  {"PortBindings": {"8765/tcp": [{"HostPort": container_port.toString()}]}}, function (err, data) {
@@ -72,6 +79,7 @@ app.post('/api/v1/deploy', function (req, res) {
 		        res.header("Access-Control-Allow-Headers", "X-Requested-With");
                 res.status = 200;
                 res.send(run_result);
+                return;
             } else {
                 run_result['status'] = 'fail';
                 run_result['error_message'] = err;
@@ -83,6 +91,7 @@ app.post('/api/v1/deploy', function (req, res) {
 		        res.header("Access-Control-Allow-Headers", "X-Requested-With");                
                 res.status = 200;
                 res.send(run_result);
+                return;
             }
         });
     });

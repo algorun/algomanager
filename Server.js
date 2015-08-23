@@ -62,6 +62,18 @@ app.post('/api/v1/deploy', function (req, res) {
     }
     var container_port = available_ports.shift();
     docker.createContainer({Image: docker_image, Cmd: ['/bin/bash']}, function (err, container) {
+        if(err){
+            run_result['status'] = 'fail';
+            run_result['error_message'] = err;
+            
+            // return the port back to the pool
+            available_ports.push(container_port);
+            res.header("Access-Control-Allow-Origin", "*");
+		    res.header("Access-Control-Allow-Headers", "X-Requested-With");                
+            res.status = 200;
+            res.send(run_result);
+            return;
+        }
         container.start(  {"PortBindings": {"8765/tcp": [{"HostPort": container_port.toString()}]}}, function (err, data) {
             var run_result = {};
             if(!err){

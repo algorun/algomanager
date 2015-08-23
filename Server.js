@@ -62,6 +62,7 @@ app.post('/api/v1/deploy', function (req, res) {
     }
     var container_port = available_ports.shift();
     docker.createContainer({Image: docker_image, Cmd: ['/bin/bash']}, function (err, container) {
+        var run_result = {};
         if(err){
             run_result['status'] = 'fail';
             run_result['error_message'] = err;

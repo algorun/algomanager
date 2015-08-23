@@ -32,7 +32,7 @@ app.get('/api/v1/status', function (req, res) {
         for(var i = 0; i<running_containers.length; i++){
             if(running_containers[i]['node_id'] === req.query.node_id){
                 res.status = 200;
-                res.send({"last_used": last_used, "endpoint": 'http://localhost:' + running_containers[i]['container_port']});
+                res.send({"last_used": last_used, "endpoint": 'http://x.algorun.org:' + running_containers[i]['container_port']});
                 return;
             }
         }
@@ -56,7 +56,7 @@ app.post('/api/v1/deploy', function (req, res) {
     for(var i = 0; i<running_containers.length; i++){
         if(running_containers[i]['node_id'] === node_id){
             res.status = 200;
-            res.send({"status": 'success', "endpoint": 'http://localhost:' + running_containers[i]['container_port']});
+            res.send({"status": 'success', "endpoint": 'http://x.algorun.org:' + running_containers[i]['container_port']});
             return;
         }
     }
@@ -79,7 +79,7 @@ app.post('/api/v1/deploy', function (req, res) {
             var run_result = {};
             if(!err){
                 run_result['status'] = 'success';
-                run_result['endpoint'] = 'http://localhost:' + container_port;
+                run_result['endpoint'] = 'http://x.algorun.org:' + container_port;
             
                 // save the container information number for future remove
                 var new_container = { 'container_id': container.id,

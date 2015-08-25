@@ -6,6 +6,7 @@ var express = require('express');
 var bodyParser = require('body-parser');
 var multer = require('multer');
 var Docker = require('dockerode');
+var enableDestroy = require('./CloseServer.js');
 var docker = new Docker({socketPath: '/var/run/docker.sock'});
 
 var host = '';
@@ -23,7 +24,6 @@ for(var i = start_port; i<= end_port; i++) {
     available_ports.push(i);
 }
 var running_containers = [];
-var last_used = 'never';
 
 app.get('/api/v1/status', function (req, res) {
     res.header("Access-Control-Allow-Origin", "*");
@@ -32,25 +32,24 @@ app.get('/api/v1/status', function (req, res) {
         for(var i = 0; i<running_containers.length; i++){
             if(running_containers[i]['node_id'] === req.query.node_id){
                 res.status = 200;
-                res.send({"last_used": last_used, "endpoint": 'http://x.algorun.org:' + running_containers[i]['container_port']});
+                res.send({"endpoint": 'http://x.algorun.org:' + running_containers[i]['container_port']});
                 return;
             }
         }
         if(i == running_containers.length){
             res.status = 404;
-            res.send({"last_used": last_used, "endpoint": 'not found'});
+            res.send({"endpoint": 'not found'});
             return;
         }
         
     } else {
         res.status = 200;
-        res.send({"last_used": last_used});
+        res.send();
         return;
     }
 });
 
 app.post('/api/v1/deploy', function (req, res) {
-    last_used = new Date();
     var docker_image = req.body.image;
     var node_id = req.body.node_id;
     for(var i = 0; i<running_containers.length; i++){
@@ -112,13 +111,13 @@ app.post('/api/v1/deploy', function (req, res) {
 
 process.on('SIGINT', function () {
     // stop all running AlgoManager containers
-    if(running_containers){
+    if(running_containers.length !== 0){
         for(var i = 0; i<running_containers.length; i++){
             docker.getContainer(running_containers[i]["container_id"]).stop(function(){});
             console.log("container " + running_containers[i]["container_id"] + " stopped .. ");
         }
     }
-    server.close();
+    server.destroy();
 });
 
 app.use(express.static(__dirname));
@@ -131,3 +130,4 @@ var server = app.listen(8764, function () {
   console.log('AlgoManager server listening at http://%s:%s ..', host, port);
 
 });
+enableDestroy(server);

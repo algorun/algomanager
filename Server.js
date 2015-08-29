@@ -36,7 +36,7 @@ app.get('/api/v1/status', function (req, res) {
         for(var i = 0; i<running_containers.length; i++){
             if(running_containers[i]['node_id'] === req.query.node_id){
                 res.status = 200;
-                res.send({"endpoint": 'http://localhost:' + running_containers[i]['container_port']});
+                res.send({"endpoint": 'http://x.algorun.org:' + running_containers[i]['container_port']});
                 return;
             }
         }
@@ -59,7 +59,7 @@ app.post('/api/v1/deploy', function (req, res) {
     for(var i = 0; i<running_containers.length; i++){
         if(running_containers[i]['node_id'] === node_id){
             res.status = 200;
-            res.send({"status": 'success', "endpoint": 'http://localhost:' + running_containers[i]['container_port']});
+            res.send({"status": 'success', "endpoint": 'http://x.algorun.org:' + running_containers[i]['container_port']});
             return;
         }
     }
@@ -82,7 +82,7 @@ app.post('/api/v1/deploy', function (req, res) {
             var run_result = {};
             if(!err){
                 run_result['status'] = 'success';
-                run_result['endpoint'] = 'http://localhost:' + container_port;
+                run_result['endpoint'] = 'http://x.algorun.org:' + container_port;
             
                 // save the container information number for future remove
                 var new_container = { 'container_id': container.id,
@@ -146,7 +146,7 @@ var gc = new CronJob(cron_expression, function(){
     if(running_containers.length !== 0){
         running_containers.forEach(function(acontainer, index){
             (function(c, i){
-                var endpoint = "http://localhost:" + c["container_port"] + "/v1/status";
+                var endpoint = "http://x.algorun.org:" + c["container_port"] + "/v1/status";
                 request(endpoint, function (error, response, body) {
                     if (!error && response.statusCode == 200) {
                         var continaer_status = JSON.parse(body);

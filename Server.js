@@ -29,30 +29,6 @@ for(var i = start_port; i<= end_port; i++) {
 var running_containers = [];
 var stop_after = 8*60*60*1000;   // the idle time after which to stop a running container
 
-app.get('/api/v1/status', function (req, res) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "X-Requested-With");
-    if(req.query.node_id){
-        for(var i = 0; i<running_containers.length; i++){
-            if(running_containers[i]['node_id'] === req.query.node_id){
-                res.status = 200;
-                res.send({"endpoint": 'http://x.algorun.org:' + running_containers[i]['container_port']});
-                return;
-            }
-        }
-        if(i == running_containers.length){
-            res.status = 404;
-            res.send({"endpoint": 'not found'});
-            return;
-        }
-        
-    } else {
-        res.status = 200;
-        res.send();
-        return;
-    }
-});
-
 app.post('/api/v1/deploy', function (req, res) {
     var docker_image = req.body.image;
     var node_id = req.body.node_id;

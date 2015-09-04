@@ -9,6 +9,7 @@ var Docker = require('dockerode');
 var enableDestroy = require('./CloseServer.js');
 var CronJob = require('cron').CronJob;
 var request = require('request');
+var db = require('./DB.js');
 
 var docker = new Docker({socketPath: '/var/run/docker.sock'});
 
@@ -89,18 +90,6 @@ app.post('/api/v1/deploy', function (req, res) {
     });
 });
 
-process.on('SIGINT', function () {
-    // stop all running AlgoManager containers
-    if(running_containers.length !== 0){
-        for(var i = 0; i<running_containers.length; i++){
-            docker.getContainer(running_containers[i]["container_id"]).stop(function(){});
-            console.log("container " + running_containers[i]["container_id"] + " stopped .. ");
-        }
-    }
-    gc.stop();
-    server.destroy();
-});
-
 app.use(express.static(__dirname));
 
 var server = app.listen(8764, function () {
@@ -161,3 +150,16 @@ var gc = new CronJob(cron_expression, function(){
         });
     }
 }, null, true, "America/New_York");
+
+// stop running containers on server INT
+process.on('SIGINT', function () {
+    // stop all running AlgoManager containers
+    if(running_containers.length !== 0){
+        for(var i = 0; i<running_containers.length; i++){
+            docker.getContainer(running_containers[i]["container_id"]).stop(function(){});
+            console.log("container " + running_containers[i]["container_id"] + " stopped .. ");
+        }
+    }
+    gc.stop();
+    server.destroy();
+});

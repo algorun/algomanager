@@ -7,16 +7,16 @@ exports.getNextPort = function (callback){
     // get a free port from the db. mark it as reserved
     var get_port_query = 'SELECT * FROM AvailablePorts WHERE Status = ?';
     db.get(get_port_query, 'free', function(error, row){
-        if(row != undefined){
+        if(!error && row != undefined){
             // reserve this port
             reservePort(row, callback);
         } else {
-            callback(row);
+            callback('undefined');
         }
     });
 }
 
-exports.reservePort = function (row, callback){
+function reservePort(row, callback){
     var reserve_port_query = 'UPDATE AvailablePorts SET Status = ? WHERE PortNumber = ?';
     db.run(reserve_port_query, ['reserved', row['PortNumber']], function(error){
         if(!error){
@@ -38,7 +38,7 @@ exports.insertRunningContainer = function (node_id, container_id, port_number, t
                 if(!error){
                     callback('success');
                 } else{
-                    callback('fail');
+                    callback('undefined');
                 }
             });
         } else {
@@ -52,7 +52,11 @@ exports.getContainerInfo = function (node_id, callback){
     // if the node_id exists, return container info. if not, return undefined
     var check_nodeid_query = 'SELECT * FROM Containers WHERE NodeID = ?';
     db.get(check_nodeid_query, node_id, function(error, row){
-        callback(row);
+        if(!error && row != undefined){
+            callback(row);
+        } else {
+            callback('undefined');
+        }
     });
 }
 
@@ -78,6 +82,17 @@ exports.removeRunningContainer = function (node_id, port_number, callback){
                     callback('fail');
                 }
             });
+        }
+    });
+}
+
+exports.freePort = function (port_number, callback){
+    var free_port_query = 'UPDATE AvailablePorts SET Status = ? WHERE PortNumber = ?';
+    db.run(free_port_query, ['free', port_number], function(error){
+        if(!error){
+            callback('success');
+        } else {
+            callback('fail');
         }
     });
 }

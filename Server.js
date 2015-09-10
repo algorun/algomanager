@@ -49,7 +49,7 @@ app.post('/api/v1/deploy', function (req, res) {
                             run_result['error_message'] = JSON.stringify(err);
                             
                             // return the port back to the pool
-                            db.freePort(container_port);
+                            db.freePort(container_port, function(){});
                             
                             res.status = 500;
                             res.send(run_result);
@@ -79,7 +79,7 @@ app.post('/api/v1/deploy', function (req, res) {
                                 run_result['error_message'] = JSON.stringify(err);
             
                                 // return the port back to the pool
-                                db.freePort(container_port);
+                                db.freePort(container_port, function(){});
                                 
                                 res.status = 500;
                                 res.send(run_result);
@@ -111,7 +111,7 @@ enableDestroy(server);
 
 // definition for the garbage collector
 // run every hour
-var cron_expression = '0 * * * * *';
+var cron_expression = '0 0/5 * * * *';
 var gc = new CronJob(cron_expression, function(){
     var now = new Date();
     // loop through running containers to stop the ones that have more than X hours being idle
@@ -144,7 +144,7 @@ var gc = new CronJob(cron_expression, function(){
                             }
                         }
                     } else {
-                        console.error("Error getting container " + running_containers[i]["container_id"] + " status!");
+                        console.error("Error getting container " + c["ContainerID"] + " status!");
                     }
                 });
             }(acontainer, index));

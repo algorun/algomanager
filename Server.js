@@ -12,7 +12,7 @@ var request = require('request');
 var db = require('./DB.js');
 
 var server_path = 'http://x.algorun.org:';
-//var server_path = 'http://localhost:';
+// var server_path = 'http://localhost:';
 
 var docker = new Docker({socketPath: '/var/run/docker.sock'});
 
@@ -32,7 +32,7 @@ app.post('/api/v1/deploy', function (req, res) {
     
     // check to see if the node already has a running container
     db.getContainerInfo(node_id, function(result){
-        if(result !== 'undefined'){
+        if(result !== 'undefined' && result['Image'] == docker_image){
             res.status = 200;
             res.send({"status": 'success', "endpoint": server_path + result['Port']});
             return;
@@ -62,8 +62,12 @@ app.post('/api/v1/deploy', function (req, res) {
                                 run_result['endpoint'] = server_path + container_port;
                                 
                                 // save the container information number for future remove
-                                db.insertRunningContainer(node_id, container.id, container_port, new Date(), function(result){
+                                db.insertRunningContainer(node_id, container.id, container_port, new Date(), docker_image, function(result, previous_container, previous_port){
                                    if(result !== 'undefined'){
+                                        if(previous_container != undefined){
+                                            docker.getContainer(previous_container).stop(function(error, response, body){});
+                                            db.freePort(previous_port, function(){});
+                                        }
                                         res.status = 200;
                                         res.send(run_result);
                                         return;

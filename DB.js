@@ -27,25 +27,48 @@ function reservePort(row, callback){
     });
 }
 
-exports.insertRunningContainer = function (node_id, container_id, port_number, time_created, callback){
-    // mark port number as busy
-    var busy_port_query= 'UPDATE AvailablePorts SET Status = ? WHERE PortNumber = ?';
-    db.run(busy_port_query, ['busy', port_number], function(error){
-        if(!error){
-            // insert the running container into table Containers
-            var insert_container_query = 'INSERT INTO Containers VALUES (?, ?, ?, ?)';
-            db.run(insert_container_query, [node_id, container_id, port_number, time_created], function(error){
+exports.insertRunningContainer = function (node_id, container_id, port_number, time_created, image, callback){
+    // check to see if the node_id already exists
+    var check_nodeid_query = 'SELECT * FROM Containers WHERE NodeID = ?';
+    db.get(check_nodeid_query, node_id, function(error, row){
+        if(!error && row != undefined){
+            // node exists. Update node info
+            var busy_port_query= 'UPDATE AvailablePorts SET Status = ? WHERE PortNumber = ?';
+            db.run(busy_port_query, ['busy', port_number], function(error){
                 if(!error){
-                    callback('success');
-                } else{
+                    var update_info_query = 'UPDATE Containers SET ContainerID = ?, Port = ?, Created = ?, Image = ? WHERE NodeID = ?';
+                    db.run(update_info_query, [container_id, port_number, time_created, image, node_id], function(error){
+                        if(!error){
+                            callback('success', row['ContainerID'], row['Port']);
+                        }else{
+                            callback('undefined');
+                        }
+                    });
+                } else {
                     callback('undefined');
                 }
             });
         } else {
-            callback('undefined');
+            // node doesn't exists.
+            // mark port number as busy
+            var busy_port_query= 'UPDATE AvailablePorts SET Status = ? WHERE PortNumber = ?';
+            db.run(busy_port_query, ['busy', port_number], function(error){
+                if(!error){
+                    // insert the running container into table Containers
+                    var insert_container_query = 'INSERT INTO Containers VALUES (?, ?, ?, ?, ?)';
+                    db.run(insert_container_query, [node_id, container_id, port_number, time_created, image], function(error){
+                        if(!error){
+                            callback('success');
+                        } else{
+                            callback('undefined');
+                        }
+                    });
+                } else {
+                    callback('undefined');
+                }
+            });
         }
-    });
-    
+    });    
 }
 
 exports.getContainerInfo = function (node_id, callback){

@@ -12,7 +12,7 @@ var request = require('request');
 var db = require('./DB.js');
 
 var server_path = 'http://x.algorun.org:';
-// var server_path = 'http://localhost:';
+//var server_path = 'http://localhost:';
 
 var docker = new Docker({socketPath: '/var/run/docker.sock'});
 

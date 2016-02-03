@@ -1,7 +1,7 @@
 {
-  "name": "AlgoPiper-Manager",
+  "name": "AlgoManager",
   "version": "1.0.0",
-  "description": "Run and stop AlgoRun docker images",
+  "description": "Manage running and stopping docker images",
   "main": "Server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -14,7 +14,8 @@
       "multer":"",
       "dockerode":"",
       "cron":"",
-      "request":""
+      "request":"",
+      "fs": ""
   },
   "repository": "https://github.com/algorun/algomanager"
 }

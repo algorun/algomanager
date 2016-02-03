@@ -7,10 +7,13 @@ var CronJob = require('cron').CronJob;
 var request = require('request');
 var nmap = require('libnmap');
 var forever = require('forever');
+fs = require('fs')
+
 var opts = {range: ['localhost'], ports: '10000-60000'}; // allow docker containers to be run on this port range
 var docker = new Docker({socketPath: '/var/run/docker.sock'});
 var server_path = 'http://localhost:';
 var running_containers = [];
+var available_images;
 
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -69,10 +72,23 @@ var server = app.listen(8764, function () {
     var host = server.address().address;
     var port = server.address().port;
     
+    fs.readFile('docker_images.json', 'utf8', function (err,data) {
+        if (err) {
+            return console.log(err);
+        }
+        available_images = JSON.parse(data)["images"];
+    });
+    
     console.log('AlgoManager server listening at http://%s:%s ..', host, port);
 });
 enableDestroy(server);
 forever.startServer(server);
+
+app.get('/api/v1/list', function(req, res){
+    res.status = 500;
+    res.send({'images': available_images});
+    return;
+});
 
 app.post('/api/v1/deploy', function(req, res){
     var docker_image = req.body.docker_image;
@@ -80,6 +96,13 @@ app.post('/api/v1/deploy', function(req, res){
     
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    
+    // check to see if the docker_image is available on the server
+    if(available_images.indexOf(docker_image.trim()) < 0){
+        res.status = 500;
+        res.send({"status": 'fail', "error_message": "the requested docker image is not available on this server. use GET /api/v1/list to get all available images."});
+        return;
+    }
     
     // check to see if the node already has a running container
     for(var i = 0; i<running_containers.length; i++){

@@ -10,11 +10,11 @@
   "dependencies": {
     "libnmap":"",
       "express": "",
-      "body-parser",
+      "body-parser":"",
       "multer":"",
       "dockerode":"",
-      "cron",
-      "request"
+      "cron":"",
+      "request":""
   },
   "repository": "https://github.com/algorun/algomanager"
 }

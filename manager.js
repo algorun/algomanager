@@ -7,7 +7,7 @@ var CronJob = require('cron').CronJob;
 var request = require('request');
 var nmap = require('libnmap');
 var forever = require('forever');
-fs = require('fs')
+var fs = require('fs');
 
 var opts = {range: ['localhost'], ports: '10000-60000'}; // allow docker containers to be run on this port range
 var docker = new Docker({socketPath: '/var/run/docker.sock'});
@@ -53,12 +53,15 @@ function getRandomAvailablePort(callback){
 
 function cleanup(){
     // stop all running AlgoManager containers
-        running_containers.forEach(function(acontainer, index){
-            (function(c, i){
-                docker.getContainer(c["container_id"]).stop(function(error, response, body){});
-                console.log("container " + c["container_id"] + " stopped .. ");
-            }(acontainer, index));
-        });
+    
+    for(var i=0;i<running_containers.length;i++){
+        docker.getContainer(running_containers[i]["container_id"]).stop(function(error, response, body){});
+        console.log("container " + running_containers[i]["container_id"] + " stopped .. ");
+    }
+    running_containers = [];
+    fs.writeFile('tmp.json', JSON.stringify(running_containers), function (err) {
+        if (err) return console.log(err);
+    });
 }
 
 var app = express();
@@ -79,6 +82,14 @@ var server = app.listen(8764, function () {
         var settings = JSON.parse(data);
         available_images = settings["images"];
         server_path = JSON.parse(data)["server"] + ":";
+    });
+    fs.readFile('tmp.json', 'utf8', function (err,data) {
+        if (err) {
+            return console.log(err);
+        }
+        // load running containers to stop them
+        running_containers = JSON.parse("[" + data.substring(1, data.length -1) + "]");
+        cleanup();
     });
     
     console.log('AlgoManager server listening at http://%s:%s ..', host, port);
@@ -143,6 +154,9 @@ app.post('/api/v1/deploy', function(req, res){
                 
                 // save running container info
                 running_containers.push({'node_id': node_id, container_id: container.id, 'port': container_port, 'docker_image': docker_image, 'created': new Date()});
+                fs.writeFile('tmp.json', JSON.stringify(running_containers), function (err) {
+                    if (err) return console.log(err);
+                });
                 res.status = 200;
                 res.send({"status": 'success', "endpoint": server_path + container_port});
                 return;

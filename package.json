@@ -11,7 +11,7 @@
     "libnmap":"",
       "express": "",
       "body-parser":"",
-      "multer":"",
+      "multer":"0.1.8",
       "dockerode":"",
       "cron":"",
       "request":"",

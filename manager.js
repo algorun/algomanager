@@ -6,7 +6,6 @@ var enableDestroy = require('./CloseServer.js');
 var CronJob = require('cron').CronJob;
 var request = require('request');
 var nmap = require('libnmap');
-var forever = require('forever');
 var fs = require('fs');
 
 var opts = {range: ['localhost'], ports: '10000-60000'}; // allow docker containers to be run on this port range
@@ -95,7 +94,6 @@ var server = app.listen(8764, function () {
     console.log('AlgoManager server listening at http://%s:%s ..', host, port);
 });
 enableDestroy(server);
-forever.startServer(server);
 
 app.get('/api/v1/list', function(req, res){
     res.header("Access-Control-Allow-Origin", "*");
@@ -114,12 +112,20 @@ app.post('/api/v1/deploy', function(req, res){
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
     
     // check to see if the docker_image is available on the server
+    var available = false;
+    if(docker_image === 'algorun/algopiper'){
+        available = true;
+    }
     for(var i=0;i<available_images.length;i++){
         if(available_images[i]['name'] === docker_image){
-            res.status = 500;
-            res.send({"status": 'fail', "error_message": "the requested docker image is not available on this server. use GET /api/v1/list to get all available images."});
-            return;    
+            available = true;
+            break;
         }
+    }
+    if(!available){
+        res.status = 500;
+        res.send({"status": 'fail', "error_message": "the requested docker image is not available on this server. use GET /api/v1/list to get all available images."});
+        return;
     }
     
     // check to see if the node already has a running container

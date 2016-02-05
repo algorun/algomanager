@@ -116,8 +116,9 @@ app.post('/api/v1/deploy', function(req, res){
     if(docker_image === 'algorun/algopiper'){
         available = true;
     }
+    console.log(available_images);
     for(var i=0;i<available_images.length;i++){
-        if(available_images[i]['name'] === docker_image){
+        if(available_images[i]['docker'] === docker_image){
             available = true;
             break;
         }

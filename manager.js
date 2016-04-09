@@ -146,7 +146,7 @@ var server = app.listen(8764, function () {
         algopiper_containers = JSON.parse("[" + data.substring(1, data.length -1) + "]");
     });
     
-    console.log('AlgoManager server listening at http://%s:%s ..', host, port);
+    console.log('AlgoManager server listening at http://localhost:' + port);
 });
 enableDestroy(server);
 

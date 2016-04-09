@@ -1,10 +1,22 @@
-# api
-The API used to perform the underlying container management of algopiper
+# AlgoManager
+The API used to perform the underlying [AlgoRun](https://github.com/algorun/algorun) container management of [AlgoPiper](https://github.com/algorun/algopiper)
 
+# Download and Install
+- Clone this repository.
+- Navigate to the downloaded directory and run the following command to install node modules:  `npm install`
+- Configure AlgoManager settings.json file by providing values for the following keys:
+
+|   Key  |                                                                                                                                                  Description                                                                                                                                                  |                                               Example                                              |
+|:------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:|
+| server | The server URL that runs AlgoManager. Use http://localhost for local environments. Change it to server domain for production environments.                                                                                                                                                                    |                                          http://localhost                                          |
+| images | A list of available algorithms packaged using AlgoRun in a dictionary format. A “name” value is the algorithm name that will appear of AlgoPiper interface. A “docker” value is algorithm docker image on the server. Note: all algorithms’ docker images must be existing on the server running AlgoManager. | [ {“name”: “BLASTN”, “docker”: “algorun/blastn”}, {“name”: “Bowtie”, “docker”: “algorun/bowtie”} ] |
+
+
+# API
 ## HTTP GET /api/v1/list
 Returs a JSON object showing available images on the server to ask for deployment.
 ```
-    'images': ["docker_image1", "docker_image2"]
+    {"images":[{"name":"my_name1","docker":"my_docker_image_1"},{"name":"name2","docker":"my_docker_image_2"}]}
 ```
 
 ## HTTP POST /api/v1/deploy

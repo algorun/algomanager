@@ -74,9 +74,9 @@ function initiateAlgoPiperPool(){
                 
                 // save running container info
                 algopiper_containers.push({container_id: container.id, 'port': container_port, 'docker_image': 'algorun/algopiper', 'created': new Date()});
-                if(algopiper_containers.length < 10){
+                if(algopiper_containers.length < 3){
                     initiateAlgoPiperPool();
-                }else{
+                } else {
                     fs.writeFile('algopiper-pool.json', JSON.stringify(algopiper_containers), function (err) {
                         if (err) return console.log(err);
                     });

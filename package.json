@@ -1,21 +1,22 @@
 {
   "name": "AlgoManager",
-  "version": "1.0.0",
-  "description": "Manage running and stopping docker images",
-  "main": "Server.js",
+  "version": "0.0.1",
+  "description": "The API used to perform the underlying AlgoRun container management of AlgoPiper",
+  "main": "manager.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Abdelrahman Hosny",
   "dependencies": {
-    "libnmap":"",
-      "express": "",
-      "body-parser":"",
+      "libnmap":"0.2.28",
+      "express": "4.13.4",
+      "body-parser":"1.15.0",
       "multer":"0.1.8",
-      "dockerode":"",
-      "cron":"",
-      "request":"",
-      "fs": ""
+      "dockerode":"2.2.10",
+      "cron":"1.1.0",
+      "request":"2.70.0",
+      "fs": "0.0.2"
   },
-  "repository": "https://github.com/algorun/algomanager"
+  "repository": "https://github.com/algorun/algomanager",
+  "license": "SEE LICENSE IN LICENSE"
 }

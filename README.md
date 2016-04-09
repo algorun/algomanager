@@ -14,9 +14,10 @@ The API used to perform the underlying [AlgoRun](https://github.com/algorun/algo
 
 # API
 ## HTTP GET /api/v1/list
-Returs a JSON object showing available images on the server to ask for deployment.
+Returns a JSON object showing available images on the server to ask for deployment.
 ```
-    {"images":[{"name":"my_name1","docker":"my_docker_image_1"},{"name":"name2","docker":"my_docker_image_2"}]}
+    {"images":[{"name":"my_name1","docker":"my_docker_image_1"},
+               {"name":"my_name2","docker":"my_docker_image_2"}]}
 ```
 
 ## HTTP POST /api/v1/deploy

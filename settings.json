@@ -1,14 +1,7 @@
 {
-    "server": "http://x.algorun.org",
+    "server": "http://localhost",
     "images": [
-        {"name": "Discretize", "docker": "algorun/discretize"},
-        {"name": "BasicRevEng", "docker": "algorun/basicreveng"},
-        {"name": "Gfan", "docker": "algorun/gfan"},
-        {"name": "REACT", "docker": "algorun/react"},
-        {"name": "BNReduction", "docker": "algorun/bnreduction"},
-        {"name": "Cyclone", "docker": "algorun/cyclone"},
-        {"name": "Wiring Diagram", "docker": "algorun/wiring-diagram"},
-        {"name": "SDDS", "docker": "algorun/sdds"},
-        {"name": "SDDS Control", "docker": "algorun/sdds-control"}
+        {"name": "BLASTN", "docker": "algorun/blastn"},
+        {"name": "Bowtie", "docker": "algorun/bowtie"}
     ]
 }

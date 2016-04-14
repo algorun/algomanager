@@ -189,7 +189,7 @@ app.post('/api/v1/deploy', function(req, res){
         res.send({"status": 'success', "endpoint": server_path + container['port']});
         return;
     }
-    console.log(available_images);
+
     for(var i=0;i<available_images.length;i++){
         if(available_images[i]['docker'] === docker_image){
             available = true;

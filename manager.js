@@ -48,58 +48,13 @@ function getRandomAvailablePort(callback){
             port = getRandomInt(10000, 60000);
         }
         callback(port);
-    });    
-}
-
-function initiateAlgoPiperPool(){
-    getRandomAvailablePort(function(container_port){
-        if(container_port == -1){
-            res.status = 500;
-            res.send({"status": 'fail', "error_message": "failed to allocate port number"});
-            return;
-        }
-        
-        docker.createContainer({Image: 'algorun/algopiper', Cmd: ['/bin/bash']}, function (err, container) {
-            if(err){
-                res.status = 500;
-                res.send({"status": 'fail', "error_message": JSON.stringify(err)});
-                return;
-            }
-            container.start({"PortBindings": {"8765/tcp": [{"HostPort": container_port.toString()}]}}, function (err, data) {
-                if(err){
-                    res.status = 500;
-                    res.send({"status": 'fail', "error_message": JSON.stringify(err)});
-                    return;
-                }
-                
-                // save running container info
-                algopiper_containers.push({container_id: container.id, 'port': container_port, 'docker_image': 'algorun/algopiper', 'created': new Date()});
-                if(algopiper_containers.length < 3){
-                    initiateAlgoPiperPool();
-                } else {
-                    fs.writeFile('algopiper-pool.json', JSON.stringify(algopiper_containers), function (err) {
-                        if (err) return console.log(err);
-                    });
-                }
-            });
-        });
     });
 }
 
-function getAlgoPiperContainer(){
-    // get the a container from the pool
-    var container = algopiper_containers.pop();
-    
-    // initiate another one
-    initiateAlgoPiperPool();
-    
-    // return the container
-    return container;
-}
 
 function cleanup(filename){
     // stop all running AlgoManager containers
-    
+
     for(var i=0;i<running_containers.length;i++){
         docker.getContainer(running_containers[i]["container_id"]).stop(function(error, response, body){});
         console.log("container " + running_containers[i]["container_id"] + " stopped .. ");
@@ -120,33 +75,33 @@ var server = app.listen(8764, function () {
 
     var host = server.address().address;
     var port = server.address().port;
-    
+
     fs.readFile('settings.json', 'utf8', function (err,data) {
         if (err) {
-            return console.log(err);
+            console.error('failed to load settings file! terminating ..');
+            process.exit();
         }
         var settings = JSON.parse(data);
         available_images = settings["images"];
         server_path = JSON.parse(data)["server"] + ":";
     });
     fs.readFile('algorun-tmp.json', 'utf8', function (err,data) {
-        if (err) {
-            return console.log(err);
+        if (!err) {
+          // load running containers to stop them
+          running_containers = JSON.parse("[" + data.substring(1, data.length -1) + "]");
+          cleanup('algorun-tmp.json');
         }
-        // load running containers to stop them
-        running_containers = JSON.parse("[" + data.substring(1, data.length -1) + "]");
-        cleanup('algorun-tmp.json');
     });
-    fs.readFile('algopiper-pool.json', 'utf8', function (err,data) {
+    /*fs.readFile('algopiper-pool.json', 'utf8', function (err,data) {
         if (err) {
             initiateAlgoPiperPool();
             return console.log(err);
         }
         // load running algopiper running containers to stop them
         algopiper_containers = JSON.parse("[" + data.substring(1, data.length -1) + "]");
-    });
-    
-    console.log('AlgoManager server listening at http://localhost:' + port);
+    });*/
+
+    console.log('AlgoManager listening on port ' + port);
 });
 enableDestroy(server);
 
@@ -162,34 +117,21 @@ app.get('/api/v1/list', function(req, res){
 app.post('/api/v1/deploy', function(req, res){
     var docker_image = req.body.docker_image;
     var node_id = req.body.node_id;
-    
+
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "X-Requested-With");
-    
+
     // check to see if the node already has a running container
     for(var i = 0; i<running_containers.length; i++){
         if(running_containers[i]['node_id'] === node_id && running_containers[i]['docker_image'] === docker_image){
             res.status = 200;
             res.send({"status": 'success', "endpoint": server_path + running_containers[i]['port']});
-            return;    
+            return;
         }
     }
-    
+
     // check to see if the docker_image is available on the server
     var available = false;
-    if(docker_image === 'algorun/algopiper'){
-        var container = getAlgoPiperContainer();
-        container['node_id'] = node_id;
-        container['created'] = new Date();
-        running_containers.push(container);
-        fs.writeFile('algorun-tmp.json', JSON.stringify(running_containers), function (err) {
-            if (err) return console.log(err);
-        });
-        res.status = 200;
-        res.send({"status": 'success', "endpoint": server_path + container['port']});
-        return;
-    }
-
     for(var i=0;i<available_images.length;i++){
         if(available_images[i]['docker'] === docker_image){
             available = true;
@@ -201,15 +143,16 @@ app.post('/api/v1/deploy', function(req, res){
         res.send({"status": 'fail', "error_message": "the requested docker image is not available on this server. use GET /api/v1/list to get all available images."});
         return;
     }
-    
+
     // node doesn't have a container running. get a random available port and initialize container.
     getRandomAvailablePort(function(container_port){
+        // failed to allocate port numer (most probably nmap is not installed or not properly configured)
         if(container_port == -1){
             res.status = 500;
             res.send({"status": 'fail', "error_message": "failed to allocate port number"});
             return;
         }
-        
+
         docker.createContainer({Image: docker_image, Cmd: ['/bin/bash']}, function (err, container) {
             if(err){
                 res.status = 500;
@@ -222,7 +165,7 @@ app.post('/api/v1/deploy', function(req, res){
                     res.send({"status": 'fail', "error_message": JSON.stringify(err)});
                     return;
                 }
-                
+
                 // save running container info
                 running_containers.push({'node_id': node_id, container_id: container.id, 'port': container_port, 'docker_image': docker_image, 'created': new Date()});
                 fs.writeFile('algorun-tmp.json', JSON.stringify(running_containers), function (err) {
@@ -242,7 +185,7 @@ var cron_expression = '0 * * * * *';
 var gc = new CronJob(cron_expression, function(){
     var now = new Date();
     var stop_after = 24 * 60 * 60 * 1000;   // the time after which to stop a running container in milliceconds (24 hours)
-    
+
     // loop through running containers to stop the ones that have more than X hours being idle
     for(var i=0;i<running_containers.length;i++){
         var running_since = now - running_containers[i]['created'];

@@ -1,6 +1,10 @@
 # AlgoManager
 The API used to perform the underlying [AlgoRun](https://github.com/algorun/algorun) container management of [AlgoPiper](https://github.com/algorun/algopiper)
 
+# Prerequisites
+- [Docker](http://www.docker.com/)
+- [NMAP](https://nmap.org/): `sudo apt-get install nmap`
+
 # Download and Install
 - Clone this repository.
 - Navigate to the downloaded directory and run the following command to install node modules:  `npm install`

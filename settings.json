@@ -1,7 +1,7 @@
 {
     "server": "http://localhost",
     "images": [
-        {"name": "BLASTN", "docker": "algorun/blastn"},
+        {"name": "BLAST", "docker": "algorun/blast"},
         {"name": "Bowtie", "docker": "algorun/bowtie"}
     ]
 }

@@ -46,7 +46,7 @@ def remove_container(container_id):
         return response
 
 
-def run_container(docker_image, node_id):
+def run_container(docker_image, node_id, memory_limit='128m', cpu_share=0):
     docker_cli = Client(base_url='unix://var/run/docker.sock')
 
     # clean containers that have been running for more than 24 hours
@@ -57,9 +57,8 @@ def run_container(docker_image, node_id):
         port = get_random_port()
         container = docker_cli.create_container(docker_image, \
                                             ports=[8765], \
-                                            host_config=docker_cli.create_host_config(port_bindings={
-                                                8765: port
-                                            }))
+                                            host_config=docker_cli.create_host_config(port_bindings={8765: port}, \
+                                                                                      mem_limit=memory_limit))
         _ = docker_cli.start(container=container.get('Id'))
         new_container = RunningContainer(node_id=node_id, \
                                          docker_image=docker_image, \

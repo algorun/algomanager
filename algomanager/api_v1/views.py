@@ -12,6 +12,8 @@ import json
 def deploy(request):
     docker_image = request.POST.get('docker_image', None)
     node_id = request.POST.get('node_id', None)
+    memory_limit = request.POST.get('memory_limit', '128m')
+    cpu_share = request.POST.get('cpu_share', 0)
 
     if docker_image is None or node_id is None:
         result = { 'status': 'fail', 'error_message': 'missing parameter values!'}
@@ -28,7 +30,7 @@ def deploy(request):
         result = {'status': 'success', \
                   'endpoint': server_path + ':' + str(running_container.port_number)}
     else:
-        result = run_container(docker_image, node_id)
+        result = run_container(docker_image, node_id, memory_limit, cpu_share)
 
     response = HttpResponse(json.dumps(result))
 

@@ -2,10 +2,11 @@ from __future__ import unicode_literals
 
 from django.db import models
 from django.utils import timezone
+from datetime import timedelta
 
 
 class RunningContainer(models.Model):
-    visitor_id = models.CharField('Visitor ID', max_length=200)
+    node_id = models.CharField('Node ID', max_length=200)
     docker_image = models.CharField('Docker Image', max_length=200)
     container_id = models.CharField('Container ID', max_length=200)
     port_number = models.IntegerField('Port Number')
@@ -16,7 +17,7 @@ class RunningContainer(models.Model):
 
     def time_to_delete(self):
         elapsed_time = timezone.now() - self.started_at
-        if elapsed_time.hour > 24:
+        if elapsed_time.days >= 1:
             return True
         else:
             return False

@@ -1,36 +1,42 @@
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.views.decorators.http import require_http_methods
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 from algorun import run_container
 from models import RunningContainer, AvailableAlgorithms
-import uuid
 import json
 
 
-def launch(request):
-    docker_image = request.GET.get('docker_image', None)
-    if 'visitor' in request.COOKIES:
-        visitor = request.COOKIES['visitor']
-    else:
-        visitor = uuid.uuid4()
+@require_http_methods(["POST"])
+@csrf_exempt
+def deploy(request):
+    docker_image = request.POST.get('docker_image', None)
+    node_id = request.POST.get('node_id', None)
 
-    # check to see if there is a running container for that user with the same docker image
+    if docker_image is None or node_id is None:
+        result = { 'status': 'fail', 'error_message': 'missing parameter values!'}
+        response = HttpResponse(json.dumps(result))
+        return response
+
     try:
-        running_container = RunningContainer.objects.get(visitor_id=visitor, docker_image=docker_image)
+        running_container = RunningContainer.objects.get(node_id=node_id, docker_image=docker_image)
     except RunningContainer.DoesNotExist:
         running_container = None
 
     if running_container:
-        result = {'success': True, \
-                  'response': running_container.port_number}
+        server_path = getattr(settings, "SERVER_PATH", None)
+        result = {'status': 'success', \
+                  'endpoint': server_path + ':' + str(running_container.port_number)}
     else:
-        result = run_container(docker_image, visitor)
+        result = run_container(docker_image, node_id)
 
     response = HttpResponse(json.dumps(result))
-    response.set_cookie('visitor', visitor)
 
     return response
 
 
+@require_http_methods(["GET"])
+@csrf_exempt
 def list(self):
     images = []
     available_algorithms = AvailableAlgorithms.objects.all()

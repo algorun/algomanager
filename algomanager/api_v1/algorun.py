@@ -3,6 +3,7 @@ from .models import RunningContainer
 from socket import *
 from django.shortcuts import get_object_or_404
 import threading
+from django.conf import settings
 
 
 def clean_containers():
@@ -45,7 +46,7 @@ def remove_container(container_id):
         return response
 
 
-def run_container(docker_image, visitor_id):
+def run_container(docker_image, node_id):
     docker_cli = Client(base_url='unix://var/run/docker.sock')
 
     # clean containers that have been running for more than 24 hours
@@ -60,15 +61,16 @@ def run_container(docker_image, visitor_id):
                                                 8765: port
                                             }))
         _ = docker_cli.start(container=container.get('Id'))
-        new_container = RunningContainer(visitor_id=visitor_id, \
+        new_container = RunningContainer(node_id=node_id, \
                                          docker_image=docker_image, \
                                          container_id=container.get('Id'), \
                                          port_number=port)
         new_container.save()
-        response = {'success': True, \
-                    'response': port}
+        server_path = getattr(settings, "SERVER_PATH", None)
+        response = {'status': 'success', \
+                    'endpoint': server_path + ':' + str(port)}
         return response
     except Exception as e:
-        response = {'success': False, \
-                    'response': e.message}
+        response = {'status': 'fail', \
+                    'error_message': e.message}
         return response

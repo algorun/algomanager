@@ -3,12 +3,12 @@ The API used to perform the underlying [AlgoRun](https://github.com/algorun/algo
 
 # Prerequisites
 - [Docker](http://www.docker.com/)
-- [NMAP](https://nmap.org/): `sudo apt-get install nmap`
+
 
 # Download and Install
 - Clone this repository.
-- Navigate to the downloaded directory and run the following command to install node modules:  `npm install`
-- Configure AlgoManager settings.json file by providing values for the following keys:
+- Navigate to the downloaded directory and run the following command to install python dependencies:  `pip install -r requirements.txt`
+- to be completed
 
 |   Key  |                                                                                                                                                  Description                                                                                                                                                  |                                               Example                                              |
 |:------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:|

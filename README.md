@@ -7,14 +7,11 @@ The API used to perform the underlying [AlgoRun](https://github.com/algorun/algo
 
 # Download and Install
 - Clone this repository.
-- Navigate to the downloaded directory and run the following command to install python dependencies:  `pip install -r requirements.txt`
-- to be completed
+- Run `docker run -v <absolute_path_to_this_repo/algomanager>:/app -v /var/run/docker.sock:/run/docker.sock -p 8080:8000 --rm -d algorun/algomanager`
+- Go to http://localhost:8080 and make sure it is working
 
-|   Key  |                                                                                                                                                  Description                                                                                                                                                  |                                               Example                                              |
-|:------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:|
-| server | The server URL that runs AlgoManager. Use http://localhost for local environments. Change it to server domain for production environments.                                                                                                                                                                    |                                          http://localhost                                          |
-| images | A list of available algorithms packaged using AlgoRun in a dictionary format. A “name” value is the algorithm name that will appear of AlgoPiper interface. A “docker” value is algorithm docker image on the server. Note: all algorithms’ docker images must be existing on the server running AlgoManager. | [ {“name”: “BLASTN”, “docker”: “algorun/blastn”}, {“name”: “Bowtie”, “docker”: “algorun/bowtie”} ] |
-
+## Configuring Production Environment
+If you want to set AlgoManager on a shared server, edit algomanager/settings.py file. Change `SERVER_PATH = 'http://localhost'` to `SERVER_PATH = 'http://server_IP'`
 
 # API
 ## HTTP GET /api/v1/list

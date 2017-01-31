@@ -8,7 +8,7 @@ The API used to perform the underlying [AlgoRun](https://github.com/algorun/algo
 # Download and Install
 - Download this repository.
 - Navigate to the downloaded folder. 
-- Run `docker run -v $(pwd):/app -v /var/run/docker.sock:/run/docker.sock -p 8080:8000 --rm -d --name algomanager algorun/algomanager`
+- Run `docker run -v $(pwd):/app -v /var/run/docker.sock:/run/docker.sock -p 8080:8000 -d --name algomanager algorun/algomanager`
 - Go to [http://localhost:8080](http://localhost:8080) and make sure it is working
 
 # Configuring Production Environment

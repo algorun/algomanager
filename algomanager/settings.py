@@ -103,9 +103,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-CORS_ORIGIN_WHITELIST = (
-    'algorun.org'
-)
+CORS_ORIGIN_ALLOW_ALL = True
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/

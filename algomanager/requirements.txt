@@ -1,3 +1,0 @@
-Django==1.9.7
-docker-py==1.9.0
-django-cors-headers==1.1.0

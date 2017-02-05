@@ -37,6 +37,7 @@ def deploy(request):
     else:
         result = run_container(docker_image, node_id, memory_limit, cpu_share)
 
+    print result
     response = HttpResponse(json.dumps(result))
 
     return response

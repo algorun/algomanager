@@ -44,7 +44,7 @@ def remove_container(container_id):
         return response
 
 
-def run_container(docker_image, node_id, memory_limit='128m', cpu=0, pipeline_file=None, pipeline_name=None):
+def run_container(docker_image, node_id, memory_limit='128m', cpu=0, pipeline_url=None, pipeline_name=None):
     client = docker.from_env()
 
     # clean containers that have been running for more than 24 hours
@@ -57,7 +57,7 @@ def run_container(docker_image, node_id, memory_limit='128m', cpu=0, pipeline_fi
         if docker_image == 'algorun/algopiper':
             algopiper_env = {'MANAGER': 'http://manager.algorun.org'}
             if pipeline_file is not None and pipeline_name is not None:
-                algopiper_env['PIPELINE_URL'] = pipeline_file
+                algopiper_env['PIPELINE_URL'] = pipeline_url
                 algopiper_env['PIPELINE_NAME'] = pipeline_name
             container = client.containers.run(str(docker_image), detach=True,ports={8765: port}, \
                                               environment=algopiper_env)

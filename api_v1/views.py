@@ -20,6 +20,10 @@ def deploy(request):
     memory_limit = request.POST.get('memory_limit', '128m')
     cpu_share = request.POST.get('cpu_share', 0)
 
+    # special parameter for AlgoPiper containers
+    pipeline_file = request.POST.get('pipeline_file', None)
+    pipeline_name = request.POST.get('pipeline_name', None)
+
     if docker_image is None or node_id is None:
         result = { 'status': 'fail', 'error_message': 'missing parameter values!'}
         response = HttpResponse(json.dumps(result))
@@ -35,7 +39,7 @@ def deploy(request):
         result = {'status': 'success', \
                   'endpoint': server_path + ':' + str(running_container.port_number)}
     else:
-        result = run_container(docker_image, node_id, memory_limit, cpu_share)
+        result = run_container(docker_image, node_id, memory_limit, cpu_share, pipeline_file, pipeline_name)
 
     print result
     response = HttpResponse(json.dumps(result))

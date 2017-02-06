@@ -54,7 +54,12 @@ def run_container(docker_image, node_id, memory_limit='128m', cpu=0):
     try:
         port = get_random_port()
 
-        container = client.containers.run(str(docker_image), detach=True,ports={8765: port}, mem_limit=str(memory_limit), cpu_shares=int(cpu))
+        if docker_image == 'algorun/algopiper':
+            container = client.containers.run(str(docker_image), detach=True,ports={8765: port}, \
+                                              environment={'MANAGER': 'http://manager.algorun.org'})
+        else:
+            container = client.containers.run(str(docker_image), detach=True,ports={8765: port}, \
+                                              mem_limit=str(memory_limit), cpu_shares=int(cpu))
 
         new_container = RunningContainer(node_id=node_id, \
                                          docker_image=docker_image, \

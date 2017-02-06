@@ -56,7 +56,7 @@ def run_container(docker_image, node_id, memory_limit='128m', cpu=0, pipeline_ur
 
         if docker_image == 'algorun/algopiper':
             algopiper_env = {'MANAGER': 'http://manager.algorun.org'}
-            if pipeline_file is not None and pipeline_name is not None:
+            if pipeline_url is not None and pipeline_name is not None:
                 algopiper_env['PIPELINE_URL'] = pipeline_url
                 algopiper_env['PIPELINE_NAME'] = pipeline_name
             container = client.containers.run(str(docker_image), detach=True,ports={8765: port}, \

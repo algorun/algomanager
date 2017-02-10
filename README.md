@@ -8,7 +8,7 @@ The API used to perform the underlying [AlgoRun](https://github.com/algorun/algo
 # Download and Install
 - Download this repository.
 - Navigate to the downloaded folder. 
-- Run `docker run -v $(pwd):/app -v /var/run/docker.sock:/run/docker.sock -p 8080:8000 -d --name algomanager algorun/algomanager`
+- Run the script `run.sh`
 - Go to [http://localhost:8080](http://localhost:8080) and make sure it is working
 
 # Configuring Production Environment
@@ -32,8 +32,8 @@ If you plan to use AlgoManager for a different tool, you can read the API endpoi
 ## HTTP GET /api/v1/list
 Returns a JSON object showing available images on the server.
 ```
-    {"images":[{"name":"my_name1","docker":"my_docker_image_1"},
-               {"name":"my_name2","docker":"my_docker_image_2"}]}
+    {"images":[{"name":"algo_name1","docker":"algo_docker_image_1"},
+               {"name":"algo_name2","docker":"algo_docker_image_2"}]}
 ```
 
 ## HTTP POST /api/v1/deploy

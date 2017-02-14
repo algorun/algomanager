@@ -79,3 +79,19 @@ def run_container(docker_image, node_id, memory_limit='128m', cpu=0, pipeline_ur
         response = {'status': 'fail', \
                     'error_message': e.message}
         return response
+
+
+def startup():
+    '''
+    I use this method to start any containers that are in the database and stopped due to a server restart
+    :return:
+    '''
+
+    clean_containers()  # delete containers that have been running for more than a day
+
+    # start remaining containers
+    running_containers_list = RunningContainer.objects.all()
+    client = docker.from_env()
+
+    for running_container in running_containers_list:
+        client.containers.get(running_container.container_id).restart()

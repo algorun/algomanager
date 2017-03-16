@@ -97,4 +97,15 @@ def startup():
         try:
             client.containers.get(running_container.container_id).restart()
         except Exception as e:
-            print "couldn't restart running_container.container_id"
+            # I should initiate a new container with the same port number
+            print "couldn't restart running_container.container_id. Getting you a fresh new container"
+            if running_container.docker_image == 'algorun/algopiper':
+                algopiper_env = {'MANAGER': 'http://manager.algorun.org'}
+                container = client.containers.run(str(running_container.docker_image), detach=True,ports={8765: running_container.port_number}, \
+                                              environment=algopiper_env)
+            else:
+                # because nodes can get themselves a new request with a container, let's just delete
+                running_container.delete()
+
+            running_container.container_id = container.id
+            running_container.save()

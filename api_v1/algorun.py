@@ -94,4 +94,7 @@ def startup():
     client = docker.from_env()
 
     for running_container in running_containers_list:
-        client.containers.get(running_container.container_id).restart()
+        try:
+            client.containers.get(running_container.container_id).restart()
+        except Exception as e:
+            print "couldn't restart running_container.container_id"
